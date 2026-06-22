@@ -2,7 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:project_2/games/number_matching/number_matching_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login _&_sighup/login_page.dart';
+import 'login _&_signup/login_page.dart';
 import 'games/neurogym.dart';
 import 'games/path_finder/path_finder_dashboard.dart';
 import 'profile_page.dart';

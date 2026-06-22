@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:project_2/home_page.dart';
 import 'package:project_2/profile_page.dart';
 import 'package:project_2/splash_screen.dart';
-import 'package:project_2/login _&_sighup/login_page.dart';
+import 'package:project_2/login _&_signup/login_page.dart';
 
 /// Lets GoRouter "listen" to Supabase login/logout events, so routing
 /// re-checks itself automatically whenever auth state changes.

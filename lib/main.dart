@@ -5,10 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'splash_screen.dart';
-import 'login _&_sighup/reset_password_page.dart';
-import 'login _&_sighup/login_page.dart';
+import 'login _&_signup/reset_password_page.dart';
+import 'login _&_signup/login_page.dart';
 import 'home_page.dart';
-import 'login _&_sighup/forgot_password_page.dart';
+import 'login _&_signup/forgot_password_page.dart';
 import 'package:go_router/go_router.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
