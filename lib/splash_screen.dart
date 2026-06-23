@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login _&_sighup/login_page.dart';
 import 'home_page.dart';
+import 'router/router_config.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,35 +18,28 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 2), () {
-      final session = Supabase.instance.client.auth.currentSession;
+    Timer(const Duration(seconds: 1), () {
+      //final session = Supabase.instance.client.auth.currentSession;
 
-      if (session != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
-      }
+      // if (session != null) {
+      //   GoRouter.of(context).goNamed('home');
+      // } else {
+      //   GoRouter.of(context).goNamed('login_page');
+      // }
+
+      GoRouter.of(context).goNamed('home');
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.black,
+    return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
-        child: Text(
-          "NeuroGym",
-          style: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: Image.asset(
+          "assets/icons/neurogym.png",
+          height: 120,
+          width: 120,
         ),
       ),
     );

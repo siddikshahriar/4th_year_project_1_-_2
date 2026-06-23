@@ -3,12 +3,14 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 
-class PlayerComponent extends PositionComponent {
+class GameComponent extends PositionComponent {
   final double tileSize;
-  PlayerComponent({
+  final String component;
+  GameComponent({
     required int row,
     required int col,
     required this.tileSize,
+    required this.component,
   }) {
     position = Vector2(col * tileSize, row * tileSize);
     size = Vector2.all(tileSize);
@@ -30,7 +32,7 @@ class PlayerComponent extends PositionComponent {
     );
     final textPainter = TextPainter(
       text: TextSpan(
-        text: '🐱',
+        text: component,
         style: TextStyle(fontSize: tileSize * 2),
       ),
       textDirection: TextDirection.ltr,

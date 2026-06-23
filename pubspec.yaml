@@ -27,6 +27,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/icons/
+    - assets/icons/neurogym.png
     - assets/icons/number_matching.png
     - assets/icons/black_shelby.png
     - assets/icons/path_finder.png

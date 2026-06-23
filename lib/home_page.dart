@@ -6,8 +6,9 @@ import 'login _&_sighup/login_page.dart';
 import 'games/neurogym.dart';
 import 'games/path_finder/path_finder_dashboard.dart';
 import 'profile_page.dart';
+import 'games/block_breaker/block_breaker_dashboard.dart';
 
-enum GameType { blackShelby, numberMatching, pathFinder }
+enum GameType { blockBreaker, numberMatching, pathFinder }
 
 /// homepage is where all the available games are listed
 class HomePage extends StatelessWidget {
@@ -60,10 +61,11 @@ class HomePage extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         children: [
-          _gameCard("Black Shelby", "assets/icons/black_shelby.png", () {
+          _gameCard("Block Breaker", "assets/icons/block_breaker.png", () {
             _navigateToGame(
               context,
-              GameWidget(game: NeuroGym(gameType: GameType.blackShelby)),
+              BlockBreakerDashboard(),
+              //GameWidget(game: NeuroGym(gameType: GameType.blockBreaker)),
             );
           }),
 
@@ -112,6 +114,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0D1117), // Deeper dark theme
       appBar: AppBar(
+        title: Text('Dashboard'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(color: Colors.white),
@@ -155,7 +158,7 @@ class HomePage extends StatelessWidget {
           children: [
             Image.asset(
               image,
-              height: 80,
+              height: 100,
               errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.gamepad, size: 80, color: Colors.white24),
             ),

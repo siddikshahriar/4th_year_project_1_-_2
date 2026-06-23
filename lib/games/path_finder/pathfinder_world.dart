@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_2/games/path_finder/maze_tile.dart';
 import 'package:project_2/games/path_finder/pathfinder_levels.dart';
-import 'package:project_2/games/path_finder/pathfinder_player.dart';
+import 'package:project_2/games/path_finder/pathfinder_game_component.dart';
 import 'package:flame/input.dart';
 
 /// creates a pathfinder world
@@ -15,7 +15,9 @@ class PathFinderWorld extends World
   final double tileSize = 50;
   late List<List<String>> grid;
   late Point player;
-  late PlayerComponent playerComp;
+  late Point endPoint;
+  late GameComponent playerComp;
+  late GameComponent endComp;
 
   int moveCount = 0;
   bool gameWon = false;
@@ -39,6 +41,7 @@ class PathFinderWorld extends World
 
     // Initial state
     player = level.start;
+    endPoint = level.end;
     pathHistory = [player];
 
     _buildMaze();
@@ -98,12 +101,20 @@ class PathFinderWorld extends World
 
   /// build the player component
   void _buildPlayer() {
-    playerComp = PlayerComponent(
+    playerComp = GameComponent(
       row: player.r,
       col: player.c,
       tileSize: tileSize,
+      component: '🐱',
+    );
+    endComp = GameComponent(
+      row: endPoint.r,
+      col: endPoint.c,
+      tileSize: tileSize,
+      component: '🎯',
     );
     add(playerComp);
+    add(endComp);
   }
 
   /// compares the tapped cell location with the players current position
@@ -116,10 +127,26 @@ class PathFinderWorld extends World
     final dx = pos.x - center.x;
     final dy = pos.y - center.y;
 
+    int r = player.r;
+    int c = player.c;
+
+    /// check if the first cell to the intended direction is a path or not
     if (dx.abs() > dy.abs()) {
-      move(0, dx > 0 ? 1 : -1);
+      int dr = 0;
+      int dc = dx > 0 ? 1 : -1;
+      int nr = r + dr;
+      int nc = c + dc;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || grid[nr][nc] == "#")
+        return;
+      move(dr, dc);
     } else {
-      move(dy > 0 ? 1 : -1, 0);
+      int dr = dy > 0 ? 1 : -1;
+      int dc = 0;
+      int nr = r + dr;
+      int nc = c + dc;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || grid[nr][nc] == "#")
+        return;
+      move(dr, dc);
     }
   }
 
@@ -127,21 +154,58 @@ class PathFinderWorld extends World
   /// until it hits any wall or lands on a junction
   void move(int dr, int dc) {
     if (gameWon) return;
-    int r = player.r;
-    int c = player.c;
+    Point lastp = Point(-1, -1);
     bool moved = false;
 
     while (true) {
-      int nr = r + dr;
-      int nc = c + dc;
-      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || grid[nr][nc] == "#")
-        break;
+      int nr = player.r + dr;
+      int nc = player.c + dc;
+      Point nextp = Point(player.r + dr, player.c + dc);
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) break;
 
-      r = nr;
-      c = nc;
+      ///
+      if (grid[nextp.r][nextp.c] == "#" &&
+          moved &&
+          !_isJunction(player.r, player.c)) {
+        List<List<int>> dirs = [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ];
+        for (var d in dirs) {
+          int nr = player.r + d[0];
+          int nc = player.c + d[1];
+          if (nr >= 0 &&
+              nr < rows &&
+              nc >= 0 &&
+              nc < cols &&
+              grid[nr][nc] != "#" &&
+              !(nr == lastp.r && nc == lastp.c)) {
+            lastp = player;
+            player = Point(nr, nc);
+            moved = true;
+            dr = d[0];
+            dc = d[1];
+            break;
+          }
+        }
+        if (pathHistory.length > 1 &&
+            pathHistory[pathHistory.length - 2] == player) {
+          pathHistory.removeLast();
+        } else {
+          if (!pathHistory.contains(player)) {
+            pathHistory.add(player);
+          }
+        }
+        continue;
+      }
+
+      lastp = player;
+      player = Point(nr, nc);
       moved = true;
 
-      Point currentPoint = Point(r, c);
+      Point currentPoint = Point(player.r, player.c);
 
       /// delets path history in case of backword traversal
       /// or adds the cell to the path history
@@ -155,18 +219,18 @@ class PathFinderWorld extends World
       }
 
       /// multiple path to go
-      if (_isJunction(r, c)) break;
+      if (_isJunction(player.r, player.c)) break;
 
       /// player reached at the end cell
-      if (r == level.end.r && c == level.end.c) break;
+      if (player.r == level.end.r && player.c == level.end.c) break;
     }
 
     /// succesfull move
     if (moved) {
       moveCount++;
       moveCounterText.text = 'Moves: $moveCount';
-      player = Point(r, c);
-      playerComp.moveTo(r, c);
+      player = Point(player.r, player.c);
+      playerComp.moveTo(player.r, player.c);
       _updateTileHighlights();
       _checkWin();
     }

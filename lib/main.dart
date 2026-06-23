@@ -25,7 +25,6 @@ void main() async {
 
 // class MyApp extends StatelessWidget {
 //   const MyApp({super.key});
-
 //   @override
 //   Widget build(BuildContext context) {
 //     return MaterialApp(
@@ -46,12 +45,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Create a single instance of router configuration
+    final MyAppRouter myAppRouter = MyAppRouter();
+
     return MaterialApp.router(
       title: 'NeuroGym',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      routeInformationParser: MyAppRouter().router.routeInformationParser,
-      routerDelegate: MyAppRouter().router.routerDelegate,
+
+      // 2. Use routerConfig
+      routerConfig: myAppRouter.router,
     );
   }
 }

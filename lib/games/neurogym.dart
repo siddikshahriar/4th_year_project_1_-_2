@@ -22,7 +22,7 @@ class NeuroGym extends FlameGame {
       case GameType.pathFinder:
         overlays.add('PathFinderDashboard');
         break;
-      case GameType.blackShelby:
+      case GameType.blockBreaker:
         add(
           TextComponent(
             text: 'Black Shelby - Coming Soon!',

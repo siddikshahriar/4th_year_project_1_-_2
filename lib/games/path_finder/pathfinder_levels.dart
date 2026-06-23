@@ -45,8 +45,8 @@ class PathFinderLevels {
         "#...#.............#",
         "###################",
       ],
-      start: const Point(6, 1),
-      end: const Point(6, 7),
+      start: Point(6, 1),
+      end: Point(6, 7),
     ),
 
     PathFinderLevel(
@@ -83,8 +83,8 @@ class PathFinderLevels {
         "###############",
         "###############",
       ],
-      start: const Point(3, 1),
-      end: const Point(17, 13),
+      start: Point(3, 1),
+      end: Point(17, 13),
     ),
 
     PathFinderLevel(
@@ -117,8 +117,8 @@ class PathFinderLevels {
         "####################",
         "####################",
       ],
-      start: const Point(7, 7),
-      end: const Point(1, 18),
+      start: Point(7, 7),
+      end: Point(1, 18),
     ),
 
     PathFinderLevel(
@@ -205,8 +205,8 @@ class PathFinderLevels {
         "######################################E#",
         "#...#...################################",
       ],
-      start: const Point(1, 1),
-      end: const Point(5, 7),
+      start: Point(1, 1),
+      end: Point(5, 7),
     ),
 
     PathFinderLevel(
@@ -224,8 +224,8 @@ class PathFinderLevels {
         "#.........#",
         "###########",
       ],
-      start: const Point(1, 1),
-      end: const Point(5, 5),
+      start: Point(1, 1),
+      end: Point(5, 5),
     ),
   ];
 }
@@ -245,10 +245,10 @@ class PathFinderLevel {
 }
 
 class Point {
-  final int r;
-  final int c;
+  int r;
+  int c;
 
-  const Point(this.r, this.c);
+  Point(this.r, this.c);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

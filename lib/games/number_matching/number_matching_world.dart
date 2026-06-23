@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:project_2/games/neurogym.dart';
 import 'package:project_2/games/number_matching/number_tile.dart';
 
 class NumberMatchingWorld extends World with HasGameReference<FlameGame> {

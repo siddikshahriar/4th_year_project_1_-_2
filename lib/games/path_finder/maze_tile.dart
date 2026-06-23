@@ -32,7 +32,7 @@ class MazeTile extends PositionComponent {
       paint.color = Colors.green.shade700;
     } else if (type == "E") {
       /// ending point
-      paint.color = Colors.red.shade700;
+      paint.color = Colors.red;
     } else {
       /// empty cell/path
       paint.color = Colors.white;
