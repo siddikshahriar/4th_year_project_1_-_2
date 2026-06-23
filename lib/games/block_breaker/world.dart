@@ -87,7 +87,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
     aimDirX = 0;
     _tiltX = 0;
 
-    // 1. Add a dark slate background canvas
+    /// game background canvas
     add(
       RectangleComponent(
         position: Vector2(-arenaWidth / 2, -arenaHeight / 2),
@@ -97,23 +97,14 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
       ),
     );
 
-    // 2. Build the Level Brick Layout Grid
     _buildBrickLayout();
-
-    // 3. Spawn the Game Elements (Paddle & Ball)
     _spawnGameElements();
-
-    // 4. HUD (score + lives)
     _buildHud();
 
-    // 5. Aim line: a dedicated, high-priority child so it draws ON TOP of
-    //    the background/bricks/paddle instead of being drawn straight from
-    //    World.render() (which runs *before* children and was getting
-    //    painted over by the opaque background rectangle every frame).
+    /// initial launching direction of ball
     add(AimLineComponent(world: this));
 
-    // 6. Full-arena input layer: drags move the paddle and, before launch,
-    //    tilt the aim line. Releasing fires the ball(s).
+    /// sets up input
     add(
       InputLayer(
         world: this,
@@ -123,6 +114,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
     );
   }
 
+  /// build the game brick layout
   void _buildBrickLayout() {
     // Configuration metrics for uniform bricks
     const double brickWidth = 60.0;
@@ -137,14 +129,6 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
     // 1 = Block exists, 0 = Empty air space
     final BlockBreakerLevels allLevels = BlockBreakerLevels();
 
-    // Assign different accent colors based on grid tier rows
-    final List<Color> rowColors = [
-      const Color(0xFFFF4B4B), // Top Tier Red
-      const Color(0xFFFF9F43), // Mid Tier Orange
-      const Color(0xFF10AC84), // Low Tier Green
-      const Color(0xFF2E86DE), // Bottom Tier Blue
-    ];
-
     // Iterative matrix translation loop converting numbers into physical game components
     for (
       int row = 0;
@@ -156,19 +140,19 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
         col < allLevels.levelList[level - 1].layout[row].length;
         col++
       ) {
-        if (allLevels.levelList[level - 1].layout[row][col] == 1) {
+        if (allLevels.levelList[level - 1].layout[row][col] != 0) {
           final double posX = startX + (col * (brickWidth + spacing));
           final double posY = startY + (row * (brickHeight + spacing));
+          final int brickHealth =
+              allLevels.levelList[level - 1].layout[row][col];
 
-          final brickColor = rowColors[row % rowColors.length];
-
-          // Roughly 1 in 4 bricks is a special "star" brick.
-          final bool isSpecial = (row + col) % 10 == 0;
+          // Roughly 1 in 6 bricks is a special "star" brick.
+          final bool isSpecial = (row + col) % 6 == 0;
 
           final brick = BrickComponent(
             position: Vector2(posX, posY),
             size: Vector2(brickWidth, brickHeight),
-            color: brickColor,
+            health: allLevels.levelList[level - 1].layout[row][col],
             isSpecial: isSpecial,
           );
           bricks.add(brick);
@@ -291,7 +275,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
     // Tilting the top of the phone to the right produces a negative
     // accelerometer x reading on most devices held in portrait, so this is
     // inverted to feel natural. Flip the sign below if it feels backwards
-    // on your device.
+    // on other device.
     paddle.position.x = (paddle.position.x - _tiltX * tiltSensitivity * dt)
         .clamp(-arenaWidth / 2 + halfPaddle, arenaWidth / 2 - halfPaddle);
   }
@@ -378,7 +362,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
         } else {
           ball.velocity.y = -ball.velocity.y;
         }
-        _destroyBrick(brick);
+        _reduceBrickHealth(brick);
         break;
       }
     }
@@ -400,6 +384,14 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
   }
 
   Rect _paddleRect() => _componentRect(paddle);
+
+  void _reduceBrickHealth(BrickComponent brick) {
+    brick.health--;
+    if (brick.health == 0) {
+      _destroyBrick(brick);
+      return;
+    }
+  }
 
   void _destroyBrick(BrickComponent brick) {
     score += brick.isSpecial ? 25 : 10;

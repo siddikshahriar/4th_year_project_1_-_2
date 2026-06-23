@@ -3,19 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:project_2/games/block_breaker/world.dart';
 
 class BrickComponent extends PositionComponent {
-  final Color color;
+  List<Color> colors = [
+    const Color(0xFFFF4B4B), // Top Tier Red
+    const Color(0xFFFF9F43), // Mid Tier Orange
+    const Color(0xFF10AC84), // Low Tier Green
+    const Color(0xFF2E86DE), // Bottom Tier Blue
+  ];
   final bool isSpecial;
+  int health;
 
   BrickComponent({
     required super.position,
     required super.size,
-    required this.color,
+    required this.health,
     this.isSpecial = false,
   });
 
   @override
   void render(Canvas canvas) {
-    final paint = Paint()..color = color;
+    final paint = Paint()..color = colors[health - 1];
     canvas.drawRRect(
       RRect.fromRectAndRadius(size.toRect(), const Radius.circular(4)),
       paint,
