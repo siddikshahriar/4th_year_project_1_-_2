@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_2/games/neurogym.dart';
 import 'package:project_2/games/path_finder/levels.dart';
+import 'package:project_2/services/local_progress_store.dart';
 
 class PathFinderDashboard extends StatefulWidget {
   final NeuroGym game;
@@ -43,6 +44,13 @@ class _PathFinderDashboardState extends State<PathFinderDashboard> {
   }
 
   Widget _buildLevelCard(int levelNumber, dynamic levelData) {
+    // Read completed levels from local Hive storage
+    final progress  = LocalProgressStore.loadProgress('path_finder');
+    final completed = progress != null
+        ? List<int>.from(progress['completed_levels'] ?? [])
+        : <int>[];
+    final isDone = completed.contains(levelData.id);
+
     return InkWell(
       onTap: () => widget.game.startPathFinder(levelData),
       borderRadius: BorderRadius.circular(16),
@@ -51,7 +59,9 @@ class _PathFinderDashboardState extends State<PathFinderDashboard> {
           color: const Color(0xFF2D323E),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.blueAccent.withOpacity(0.4),
+            color: isDone
+                ? Colors.greenAccent.withOpacity(0.7)
+                : Colors.blueAccent.withOpacity(0.4),
             width: 2,
           ),
           boxShadow: [
@@ -65,7 +75,17 @@ class _PathFinderDashboardState extends State<PathFinderDashboard> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.map_rounded, color: Colors.blueAccent, size: 40),
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.map_rounded, color: Colors.blueAccent, size: 40),
+                ),
+                if (isDone)
+                  const Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
+              ],
+            ),
             const SizedBox(height: 12),
             Text(
               'Level $levelNumber',

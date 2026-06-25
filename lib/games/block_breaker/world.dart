@@ -13,6 +13,8 @@ import 'components/star_component.dart';
 import 'components/aim_line_component.dart';
 import 'restart_overlay.dart';
 import 'levels.dart';
+import 'package:project_2/services/local_progress_store.dart';
+import 'package:project_2/services/progress_sync_service.dart';
 
 class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
   int level;
@@ -464,6 +466,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
 
   void _showLevelComplete() {
     gameOver = true;
+    _saveProgress(); // save which level was just beaten
     add(
       RestartOverlay(
         world: this,
@@ -473,6 +476,24 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
         size: Vector2(arenaWidth, arenaHeight),
       ),
     );
+  }
+
+  /// Saves the completed level number locally (Hive) and syncs
+  /// to Supabase if online. Mirrors the same pattern used in
+  /// PathFinderWorld and NumberMatchingWorld.
+  Future<void> _saveProgress() async {
+    final existing  = LocalProgressStore.loadProgress('block_breaker');
+    final completed = existing != null
+        ? List<int>.from(existing['completed_levels'] ?? [])
+        : <int>[];
+    if (!completed.contains(level)) completed.add(level);
+
+    await LocalProgressStore.saveProgress('block_breaker', {
+      'completed_levels': completed,
+      'last_level':       level,
+      'last_score':       score,
+    });
+    ProgressSyncService.syncNow();
   }
 
   void restartGame() {

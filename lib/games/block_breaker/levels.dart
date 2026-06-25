@@ -10,9 +10,37 @@ import 'components/brick_component.dart';
 import 'components/paddle_component.dart';
 import 'components/star_component.dart';
 import 'restart_overlay.dart';
+import 'dart:convert';
+import 'package:hive/hive.dart';
 
 class BlockBreakerLevels {
-  final List<Level> levelList = [
+  /// Returns levels from Hive cache (filled by LevelSyncService when online).
+  /// Falls back to the bundled list below when offline with no cache yet.
+  List<Level> get levelList {
+    try {
+      final raw = Hive.box('block_breaker_levels_box').get('levels');
+      if (raw != null) {
+        final list = jsonDecode(raw as String) as List<dynamic>;
+        if (list.isNotEmpty) {
+          return list.map<Level>((item) {
+            final m      = item as Map<String, dynamic>;
+            final layout = (m['layout'] as List<dynamic>)
+                .map<List<int>>((r) => (r as List<dynamic>)
+                .map((c) => (c as num).toInt())
+                .toList())
+                .toList();
+            return Level(
+              levelId: (m['level_id'] as num).toInt(),
+              layout:  layout,
+            );
+          }).toList();
+        }
+      }
+    } catch (_) {}
+    return _bundled;
+  }
+
+  static final List<Level> _bundled = [
     Level(
       levelId: 1,
       layout: [

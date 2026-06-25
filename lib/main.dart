@@ -10,16 +10,18 @@ import 'login _&_signup/login_page.dart';
 import 'home_page.dart';
 import 'login _&_signup/forgot_password_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:project_2/services/level_sync_service.dart';
+import 'package:project_2/services/progress_sync_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // local, on-device storage for offline game progress and the
-  // last-known list of games (used when there is no internet)
   await Hive.initFlutter();
   await Hive.openBox('game_progress_box');
   await Hive.openBox('games_catalog_box');
+  await Hive.openBox('path_finder_levels_box');   // NEW
+  await Hive.openBox('block_breaker_levels_box'); // NEW
 
   // await Supabase.initialize(
   //   url: 'https://uvycbfdnjvzleikvcgzn.supabase.co',
@@ -30,11 +32,42 @@ void main() async {
     anonKey: 'sb_publishable_g7zFmsN835t9qAzbdqAhLw_vHT0yeJn',
   );
 
+  await LevelSyncService.syncLevels(); // NEW – download levels if online
+  ProgressSyncService.start();         // NEW – start connectivity listener
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+// Changed from StatelessWidget → StatefulWidget to detect app quit/pause
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// When the user minimises or closes the app, push any unsaved
+  /// local progress to Supabase immediately (if online).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      ProgressSyncService.syncNow();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,3 +79,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

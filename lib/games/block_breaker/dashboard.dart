@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:project_2/router/router_config.dart';
 import 'levels.dart';
 import 'package:project_2/games/block_breaker/world.dart';
+import 'package:project_2/services/local_progress_store.dart';
 
 class BlockBreakerDashboard extends StatelessWidget {
   final BlockBreakerLevels allLevel = BlockBreakerLevels();
@@ -30,6 +31,12 @@ class BlockBreakerDashboard extends StatelessWidget {
   }
 
   Widget _buildLevelCard(BuildContext context, levelNumber) {
+    final progress  = LocalProgressStore.loadProgress('block_breaker');
+    final completed = progress != null
+        ? List<int>.from(progress['completed_levels'] ?? [])
+        : <int>[];
+    final isDone = completed.contains(levelNumber);
+
     return InkWell(
       onTap: () {
         GoRouter.of(context).pushNamed(
@@ -37,14 +44,15 @@ class BlockBreakerDashboard extends StatelessWidget {
           pathParameters: {'level': levelNumber.toString()},
         );
       },
-
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF2D323E),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.blueAccent.withOpacity(0.4),
+            color: isDone
+                ? Colors.greenAccent.withOpacity(0.7)
+                : Colors.blueAccent.withOpacity(0.4),
             width: 2,
           ),
           boxShadow: [
@@ -58,7 +66,17 @@ class BlockBreakerDashboard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.map_rounded, color: Colors.blueAccent, size: 40),
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.map_rounded, color: Colors.blueAccent, size: 40),
+                ),
+                if (isDone)
+                  const Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
+              ],
+            ),
             const SizedBox(height: 12),
             Text(
               'Level $levelNumber',
