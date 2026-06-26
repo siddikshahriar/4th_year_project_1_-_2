@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:project_2/router/router_config.dart';
 
 // Defining a StatefulWidget class (Blueprint for a screen with mutable state)
 class EmailVerificationSentPage extends StatefulWidget {
-
   // Instance variable (encapsulation: holds email passed from previous screen)
   final String email;
 
@@ -21,7 +21,6 @@ class EmailVerificationSentPage extends StatefulWidget {
 // State class (handles mutable state and logic of the widget)
 // "_" makes it private to this file (data hiding concept in OOP)
 class _EmailVerificationSentPageState extends State<EmailVerificationSentPage> {
-
   // Creating an object of TextEditingController (object manages OTP input)
   final otpController = TextEditingController();
 
@@ -39,50 +38,42 @@ class _EmailVerificationSentPageState extends State<EmailVerificationSentPage> {
         type: OtpType.signup,
       );
 
+      setState(() => _loading = false);
+
       if (res.session != null) {
-        // Success: Do NOT sign out. Go directly to the main app screen!
-        if (mounted) {
-          context.go('/');
-        }
+        await Supabase.instance.client.auth.signOut();
+
+        // --- THE FIX: Guard the async gap ---
+        //if (!mounted) return;
+
+        // Now it is safe to use context
+        MyAppRouter.router.goNamed('login');
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Invalid OTP"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
+        // --- THE FIX: Guard this async gap too ---
+        //if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message),
+          const SnackBar(
+            content: Text("Invalid OTP"),
             backgroundColor: Colors.red,
           ),
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
+      // Catching network/server errors during verification
+      //if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-
   // Another asynchronous method (class behavior)
   Future<void> resendOtp() async {
-
     // Calling resend method from Supabase auth object
     await Supabase.instance.client.auth.resend(
       type: OtpType.signup,
@@ -93,7 +84,6 @@ class _EmailVerificationSentPageState extends State<EmailVerificationSentPage> {
   // Overriding build method from State class (polymorphism)
   @override
   Widget build(BuildContext context) {
-
     // Returning Scaffold object (UI structure class)
     return Scaffold(
       backgroundColor: Colors.black,
@@ -104,7 +94,6 @@ class _EmailVerificationSentPageState extends State<EmailVerificationSentPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             // Text widget object
             const Text(
               "Enter Email OTP",
@@ -129,7 +118,9 @@ class _EmailVerificationSentPageState extends State<EmailVerificationSentPage> {
 
             // ElevatedButton object
             ElevatedButton(
-              onPressed: _loading ? null : verifyOtp, // Function reference (method binding)
+              onPressed: _loading
+                  ? null
+                  : verifyOtp, // Function reference (method binding)
               child: _loading
                   ? const CircularProgressIndicator() // Object shown during loading
                   : const Text("Verify"),

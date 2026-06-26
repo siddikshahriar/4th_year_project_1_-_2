@@ -6,9 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Downloads the latest game levels from Supabase when online,
 /// then caches them in Hive so the game always works offline too.
 class LevelSyncService {
-  static const String _pfBox  = 'path_finder_levels_box';
-  static const String _bbBox  = 'block_breaker_levels_box';
-  static const String _key    = 'levels';
+  static const String _pfBox = 'path_finder_levels_box';
+  static const String _bbBox = 'block_breaker_levels_box';
+  static const String _key = 'levels';
 
   /// Call once on app startup (after Hive + Supabase are ready).
   /// If offline it does nothing — the Hive cache from last online
@@ -27,7 +27,7 @@ class LevelSyncService {
       final rows = await Supabase.instance.client
           .from('path_finder_levels')
           .select()
-          .order('sort_order');
+          .order('id');
       await Hive.box(_pfBox).put(_key, jsonEncode(rows));
     } catch (_) {
       // Stay on cached data silently
@@ -39,7 +39,7 @@ class LevelSyncService {
       final rows = await Supabase.instance.client
           .from('block_breaker_levels')
           .select()
-          .order('sort_order');
+          .order('level_id');
       await Hive.box(_bbBox).put(_key, jsonEncode(rows));
     } catch (_) {
       // Stay on cached data silently
