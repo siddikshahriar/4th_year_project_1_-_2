@@ -11,7 +11,7 @@ import 'components/brick_component.dart';
 import 'components/paddle_component.dart';
 import 'components/star_component.dart';
 import 'components/aim_line_component.dart';
-import 'restart_overlay.dart';
+import 'game_over_overlay.dart';
 import 'levels.dart';
 import 'package:project_2/services/local_progress_store.dart';
 import 'package:project_2/services/progress_sync_service.dart';
@@ -149,8 +149,9 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
           final int brickHealth =
               allLevels.levelList[level - 1].layout[row][col];
 
-          // Roughly 1 in 6 bricks is a special "star" brick.
-          final bool isSpecial = (row + col) % 6 == 0;
+          // Roughly 1 in 5 bricks is a special "star" brick.
+          //final bool isSpecial = (row + col) % 6 == 0;
+          final bool isSpecial = Random().nextInt(1000) % 5 == 0;
 
           final brick = BrickComponent(
             position: Vector2(posX, posY),
@@ -218,7 +219,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
       ),
     )..priority = 50;
 
-    add(scoreText);
+    //add(scoreText);
     add(livesText);
   }
 
@@ -455,7 +456,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
   void _showGameOver() {
     gameOver = true;
     add(
-      RestartOverlay(
+      GameOverOverlay(
         world: this,
         title: 'GAME OVER',
         subtitle: 'Score: $score',
@@ -469,7 +470,7 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
     gameOver = true;
     _saveProgress(); // save which level was just beaten
     add(
-      RestartOverlay(
+      GameOverOverlay(
         world: this,
         title: 'LEVEL CLEAR!',
         subtitle: 'Score: $score',
@@ -484,17 +485,11 @@ class BlockBreakerWorld extends World with HasGameReference<BlockBreaker> {
   /// PathFinderWorld and NumberMatchingWorld.
   Future<void> _saveProgress() async {
     final existing = LocalProgressStore.loadProgress('block_breaker');
-    final completed = existing != null
-        ? List<int>.from(existing['completed_levels'] ?? [])
-        : <int>[];
-    if (!completed.contains(level)) completed.add(level);
-    int currentXP = (existing != null) ? existing['xp'].toInt() : 0;
+    int currentXP = (existing != null) ? existing['levelXP'].toInt() : 0;
 
     await LocalProgressStore.saveProgress('block_breaker', {
-      'completed_levels': completed,
       'last_level': level,
-      'last_score': score,
-      'xp': currentXP + levelXP,
+      'levelXP': currentXP + levelXP,
     });
     ProgressSyncService.syncNow();
   }

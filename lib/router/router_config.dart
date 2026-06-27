@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:project_2/games/block_breaker/dashboard.dart';
 import 'package:project_2/login%20_&_signup/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:project_2/home_page.dart';
@@ -82,6 +83,14 @@ class MyAppRouter {
           return MaterialPage(
             child: GameScreen(level: level, levelXP: levelXP),
           );
+        },
+      ),
+
+      GoRoute(
+        name: 'block_breaker_dashboard',
+        path: '/games/block_breaker/dashboard',
+        pageBuilder: (context, start) {
+          return MaterialPage(child: BlockBreakerDashboard());
         },
       ),
     ],

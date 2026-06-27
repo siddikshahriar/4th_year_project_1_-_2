@@ -15,9 +15,7 @@ class BlockBreakerDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. Load progress ONCE here, instead of inside the loop
     final progress = LocalProgressStore.loadProgress('block_breaker');
-    final completedLevels = progress != null
-        ? List<int>.from(progress['completed_levels'] ?? [])
-        : <int>[];
+    final lastLevel = progress != null ? progress['last_level'] : 0;
 
     return Scaffold(
       backgroundColor: const Color(
@@ -36,7 +34,7 @@ class BlockBreakerDashboard extends StatelessWidget {
           itemBuilder: (context, index) {
             // 2. Grab the actual target level object
             final currentLevel = allLevel[index];
-            final isDone = completedLevels.contains(currentLevel.levelId);
+            final isDone = lastLevel >= currentLevel.levelId;
             final levelXP = currentLevel.levelXP;
 
             return _buildLevelCard(
@@ -44,6 +42,7 @@ class BlockBreakerDashboard extends StatelessWidget {
               currentLevel.levelId,
               levelXP,
               isDone,
+              lastLevel,
             );
           },
         ),
@@ -57,14 +56,26 @@ class BlockBreakerDashboard extends StatelessWidget {
     int levelId,
     int levelXP,
     bool isDone,
+    int lastLevel,
   ) {
     return InkWell(
       onTap: () {
-        GoRouter.of(context).pushNamed(
-          'block_breaker_gamescreen',
-          pathParameters: {'level': levelId.toString()},
-          extra: isDone ? 0 : levelXP,
-        );
+        if (levelId <= lastLevel + 1) {
+          GoRouter.of(context).pushNamed(
+            'block_breaker_gamescreen',
+            pathParameters: {'level': levelId.toString()},
+            extra: isDone ? 0 : levelXP,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'complete previous levels first',
+                style: TextStyle(color: Colors.red, fontSize: 14),
+              ),
+            ),
+          );
+        }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -92,28 +103,26 @@ class BlockBreakerDashboard extends StatelessWidget {
               alignment: Alignment.topRight,
               clipBehavior: Clip.none, // Prevents checkmark clipping
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(4),
                   child: Icon(
-                    Icons.map_rounded,
-                    color: Colors.blueAccent,
+                    isDone
+                        ? Icons.check_circle
+                        : levelId == lastLevel + 1
+                        ? Icons.lock_open
+                        : Icons.lock,
+                    color: isDone
+                        ? Colors.blueAccent
+                        : levelId == lastLevel + 1
+                        ? Colors.green
+                        : Colors.red,
                     size: 40,
                   ),
                 ),
-                if (isDone)
-                  const Positioned(
-                    top: -2,
-                    right: -2,
-                    child: Icon(
-                      Icons.check_circle,
-                      color: Colors.greenAccent,
-                      size: 18,
-                    ),
-                  ),
               ],
             ),
             Text(
-              'XP: $levelXP',
+              '$levelXP XP',
               style: const TextStyle(
                 color: Color(0xFFFFDF00),
                 fontWeight: FontWeight.bold,

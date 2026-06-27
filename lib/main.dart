@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_2/router/router_config.dart';
-import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:app_links/app_links.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'splash_screen.dart';
 import 'login _&_signup/reset_password_page.dart';
@@ -17,6 +15,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //await Hive.close();
+  //await Hive.deleteFromDisk();
+
   await Hive.initFlutter();
   await Hive.openBox('game_progress_box');
   await Hive.openBox('games_catalog_box');
